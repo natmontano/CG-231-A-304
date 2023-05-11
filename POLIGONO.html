@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en-GB"></html>
+<html>
+	<head>
+    <meta charset="utf-8" />
+		<title>Titulo</title>
+        <style>
+            html, body { margin: 0; padding: 0; overflow: hidden; }
+            #text {
+                position: absolute;
+                padding: 10px;
+                width: 100%;
+                text-align: center;
+                color: #ffffff;
+            }
+        </style>
+	</head>
+	<body>
+		<div id="text">POLIGONO<br/>
+            NATALIA MONTAÑO<br/>
+        </div>
+	</body>
+    </html>
+
+<body>
+    <script type="module">
+        import * as THREE from 'https://sebastiann16.github.io/CompG/three.module.js';
+        import { OrbitControls } from 'https://sebastiann16.github.io/CompG/OrbitControls.js';
+        var WIDTH = window.innerWidth;
+        var HEIGHT = window.innerHeight;
+    
+        var renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(WIDTH, HEIGHT);
+        renderer.setClearColor(0x000000, 1);
+        document.body.appendChild(renderer.domElement);
+    
+        //Creacion de la escena
+        var scene = new THREE.Scene();
+        var camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT);
+        //Posicion de las camaras
+        camera.position.z = 10;
+        camera.position.y = 10;
+        camera.position.x = 10;
+        scene.add(camera);
+
+      //Variables
+        var n=5;
+        var angulo=2*(Math.PI)/n;
+        var vertices=[];
+
+        var geometria = new THREE.BoxGeometry();
+        geometria.vertices = poliedro.vertices.map(v => new THREE.Vector3(v[0], v[1], v[2]));
+        geometria.faces = poliedro.caras.map(c => new THREE.Face3(c[0], c[1], c[2]));
+        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
+        var mesh = new THREE.Mesh(geometria, material);
+
+        scene.add(mesh);
+
+        var controls = new OrbitControls(camera, renderer.domElement);
+        controls.update();
+
+        function poligono(n, radio) {
+        const vertices = [];
+        const angulo = 2*Math.PI/n;
+        for (i=0; i<=n; i++) {
+        vertices.push([radio*Math.cos(i*angulo), radio*Math.sin(i*angulo)]);
+        }
+        return vertices;
+    }
+        function poliedro(n, radio, altura) {
+        const verticesBase = poligono(n, radio);
+        const verticesSuperiores = verticesBase.map(([x, y]) => [x, y, altura]);
+        const verticesInferiores = verticesBase.map(([x, y]) => [x, y, 0]);
+        const vertices = verticesSuperiores.concat(verticesInferiores);
+  
+         const caras = [];
+         for (let i = 0; i < n; i++) {
+         caras.push([i, (i + 1) % n, (i + n) % (2 * n)]);
+         caras.push([(i + 1) % n, (i + n + 1) % (2 * n), (i + n) % (2 * n)]);
+        }
+  
+      return {vertices, caras};
+}
+     poliedro=(5,25,50);
+     scene.add(poliedro);
+
+        
+    // Funcion para poder moverlo en diferentes direcciones
+     function animate() {
+
+     requestAnimationFrame(animate);
+     renderer.render(scene, camera);
+     scene.add(poliedro);
+     }
+     animate();
+
+</script>
+</body>
+
+</html>
