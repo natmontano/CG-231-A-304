@@ -1,100 +1,140 @@
 <!DOCTYPE html>
-<html lang="en-GB"></html>
-<html>
-	<head>
+<html lang="en-GB">
+<head>
     <meta charset="utf-8" />
-		<title>Titulo</title>
-        <style>
-            html, body { margin: 0; padding: 0; overflow: hidden; }
-            #text {
-                position: absolute;
-                padding: 10px;
-                width: 100%;
-                text-align: center;
-                color: #ffffff;
-            }
-        </style>
-	</head>
-	<body>
-		<div id="text">POLIGONO<br/>
-            NATALIA MONTAÑO<br/>
-        </div>
-	</body>
-    </html>
-
+    <title>Título</title>
+    <style>
+        html, body { margin: 0; padding: 0; overflow: hidden; }
+        #text {
+            position: absolute;
+            padding: 10px;
+            width: 100%;
+            text-align: center;
+            color: #28a1d1;
+        }
+    </style>
+</head>
 <body>
-    <script type="module">
-        import * as THREE from 'https://sebastiann16.github.io/CompG/three.module.js';
-        import { OrbitControls } from 'https://sebastiann16.github.io/CompG/OrbitControls.js';
-        var WIDTH = window.innerWidth;
-        var HEIGHT = window.innerHeight;
+<div id="text">POLÍGONO<br/>
+    NATALIA MONTAÑO<br/>
+</div>
+<script type="module">
+    import * as THREE from 'https://sebastiann16.github.io/CompG/three.module.js';
+    import { OrbitControls } from 'https://sebastiann16.github.io/CompG/OrbitControls.js';
     
-        var renderer = new THREE.WebGLRenderer({ antialias: true });
-        renderer.setSize(WIDTH, HEIGHT);
-        renderer.setClearColor(0x000000, 1);
-        document.body.appendChild(renderer.domElement);
+    var WIDTH = window.innerWidth;
+    var HEIGHT = window.innerHeight;
     
-        //Creacion de la escena
-        var scene = new THREE.Scene();
-        var camera = new THREE.PerspectiveCamera(70, WIDTH / HEIGHT);
-        //Posicion de las camaras
-        camera.position.z = 10;
-        camera.position.y = 10;
-        camera.position.x = 10;
-        scene.add(camera);
-
-      //Variables
-        var n=5;
-        var angulo=2*(Math.PI)/n;
-        var vertices=[];
-
-        var geometria = new THREE.BoxGeometry();
-        geometria.vertices = poliedro.vertices.map(v => new THREE.Vector3(v[0], v[1], v[2]));
-        geometria.faces = poliedro.caras.map(c => new THREE.Face3(c[0], c[1], c[2]));
-        var material = new THREE.MeshBasicMaterial({ color: 0xffffff, wireframe: true });
-        var mesh = new THREE.Mesh(geometria, material);
-
-        scene.add(mesh);
-
-        var controls = new OrbitControls(camera, renderer.domElement);
-        controls.update();
-
-        function poligono(n, radio) {
+    var renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setSize(WIDTH, HEIGHT);
+    renderer.setClearColor(0xDDDDDD, 1);
+    document.body.appendChild(renderer.domElement);
+    
+    var scene = new THREE.Scene();
+    
+    var camera = new THREE.PerspectiveCamera(45, WIDTH / HEIGHT, 1, 1000);
+    camera.position.z = 35;
+    camera.position.x = -5.2;
+    camera.position.y = 2;
+    camera.rotation.set(0, -0.5, 0);
+    scene.add(camera);
+    
+    var controls = new OrbitControls(camera, renderer.domElement);
+    
+    // Configurar iluminación ambiental
+    const ambientLight = new THREE.AmbientLight(0xffffff, 0.5);
+    scene.add(ambientLight);
+    
+    // Configurar luz direccional
+    const light = new THREE.DirectionalLight(0xffffff, 1);
+    light.position.set(-1, 2, 4);
+    scene.add(light);
+    
+    const size = 150;
+    const divisions = 160;
+    
+    // Agregar ejes de referencia
+    const axesHelper = new THREE.AxesHelper(1000);
+    scene.add(axesHelper);
+    
+    // Agregar una rejilla al plano
+    const gridHelper = new THREE.GridHelper(size, divisions);
+    scene.add(gridHelper);
+    
+    // Función para generar un polígono regular
+    function generarPoligono(nlados, ladoigual) {
         const vertices = [];
-        const angulo = 2*Math.PI/n;
-        for (i=0; i<=n; i++) {
-        vertices.push([radio*Math.cos(i*angulo), radio*Math.sin(i*angulo)]);
+        const ang = (2 * Math.PI) / nlados;
+        for (let i = 0; i < nlados; i++) {
+            let x = ladoigual * Math.cos(i * ang);
+            let y = ladoigual * Math.sin(i * ang);
+            vertices[i] = new THREE.Vector3(x, y, 0);
         }
         return vertices;
     }
-        function poliedro(n, radio, altura) {
-        const verticesBase = poligono(n, radio);
-        const verticesSuperiores = verticesBase.map(([x, y]) => [x, y, altura]);
-        const verticesInferiores = verticesBase.map(([x, y]) => [x, y, 0]);
-        const vertices = verticesSuperiores.concat(verticesInferiores);
-  
-         const caras = [];
-         for (let i = 0; i < n; i++) {
-         caras.push([i, (i + 1) % n, (i + n) % (2 * n)]);
-         caras.push([(i + 1) % n, (i + n + 1) % (2 * n), (i + n) % (2 * n)]);
+    
+    // Función para crear una geometría 2D a partir de un polígono
+    function crearGeometria2D(nlados, ladoigual) {
+        const vertices = generarPoligono(nlados, ladoigual);
+    
+        // Crear un objeto Shape
+        const shape = new THREE.Shape();
+    
+        // Establecer el primer vértice del shape
+        shape.moveTo(vertices[0].x, vertices[0].y);
+    
+        // Unir los vértices para formar el contorno del shape
+        for (let i = 1; i < nlados; i++) {
+            shape.lineTo(vertices[i].x, vertices[i].y);
         }
-  
-      return {vertices, caras};
-}
-     poliedro=(5,25,50);
-     scene.add(poliedro);
-
-        
-    // Funcion para poder moverlo en diferentes direcciones
-     function animate() {
-
-     requestAnimationFrame(animate);
-     renderer.render(scene, camera);
-     scene.add(poliedro);
-     }
-     animate();
-
+    
+        // Crear una geometría 2D a partir del shape
+        var extrudeSettings={
+            depth: 10,
+            bevelEnabled: false,
+        }
+        const geometry = new THREE.ExtrudeGeometry(shape, extrudeSettings);
+    
+        return geometry;
+    }
+    
+    // Crear una geometría 2D con un cuadrado regular
+    const geometria2 = crearGeometria2D(4, 2);
+    const material2 = new THREE.MeshBasicMaterial({ color: 0xED4BFF });
+    var x = 10;
+    var y = 0;
+    var z = 0;
+    const poli = new THREE.Mesh(geometria2, material2);
+    geometria2.translate(x, y, z);
+    scene.add(poli);
+    
+    // Crear una geometría 2D con un hexágono regular
+    const geometria3 = crearGeometria2D(6, 2);
+    const material = new THREE.MeshBasicMaterial({ color: 0xED4BFF });
+    var ang = -190;
+    const poli2 = new THREE.Mesh(geometria3, material);
+    geometria3.translate(5, 0, 0);
+    geometria3.rotateX(ang);
+    scene.add(poli2);
+    
+    // Función para agregar dos polígonos al escenario
+    function agregarDosPoligonos() {
+        const geometria2D = crearGeometria2D(10, 2);
+        const material = new THREE.MeshBasicMaterial({ color: 0xED4BFF });
+        const poli = new THREE.Mesh(geometria2D, material);
+        geometria2D.rotateY(-45);
+        scene.add(poli);
+    }
+    
+    agregarDosPoligonos();
+    
+    // Renderizar la animación
+    function render() {
+        requestAnimationFrame(render);
+        renderer.render(scene, camera);
+    }
+    
+    render();
 </script>
 </body>
-
 </html>
